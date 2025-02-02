@@ -1,24 +1,12 @@
-import React, { useState, useEffect } from "react";
-import { MessageBubble } from "./MessageBubble";
-import { TypingIndicator } from "./TypingIndicator";
-import { Send, BatteryLow, SignalLow } from "lucide-react";
+import React, { useState, useEffect } from 'react';
+import { MessageBubble } from './MessageBubble';
+import { TypingIndicator } from './TypingIndicator';
+import { Battery, Signal } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 export const ChatInterface = () => {
-  const [messages, setMessages] = useState([
-    { content: "What is the contact address for $TEST token?", isUser: true },
-    {
-      content:
-        "The contract address for $TEST is 86EvFgXebSbpBHtaXboqie9RnopuoXVPkE4N5ncdpump.",
-      isUser: false,
-    },
-    { content: "What is your name?", isUser: true },
-    {
-      content:
-        "I'm Raven, your go-to gal for all things Doompocalypse. What can I hook you up with today?",
-      isUser: false,
-    },
-  ]);
-  const [input, setInput] = useState("");
+  const [messages, setMessages] = useState<{ content: string; isUser: boolean }[]>([]);
+  const [inputMessage, setInputMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
 
@@ -29,94 +17,69 @@ export const ChatInterface = () => {
     return () => clearInterval(timer);
   }, []);
 
-  const formatTime = (date: Date) => {
-    return date.toLocaleTimeString('en-US', {
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true
-    });
-  };
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!inputMessage.trim()) return;
 
-  const handleSend = () => {
-    if (!input.trim()) return;
-
-    setMessages([...messages, { content: input, isUser: true }]);
-    setInput("");
+    const newMessage = { content: inputMessage, isUser: true };
+    setMessages(prev => [...prev, newMessage]);
+    setInputMessage('');
     setIsTyping(true);
 
+    // Simulate AI response
     setTimeout(() => {
       setIsTyping(false);
-      setMessages((prev) => [
-        ...prev,
-        {
-          content: "I'm processing your request through the wasteland's network...",
-          isUser: false,
-        },
-      ]);
-    }, 2000);
+      setMessages(prev => [...prev, { content: "I'm here to assist you!", isUser: false }]);
+    }, 1500);
   };
 
   return (
-    <div className="relative w-[380px] h-[700px] mx-auto bg-black rounded-[3rem] border-4 border-white/10 shadow-2xl overflow-hidden">
-      {/* Phone Notch */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 h-6 w-40 bg-black rounded-b-2xl z-20"></div>
-      
-      {/* Status Bar */}
-      <div className="relative h-12 bg-black flex items-center justify-between px-6 border-b border-white/10">
-        <span className="text-white text-sm">{formatTime(currentTime)}</span>
-        <div className="flex items-center space-x-2">
-          <SignalLow className="w-4 h-4 text-white" />
-          <span className="text-white text-sm">5G</span>
-          <BatteryLow className="w-4 h-4 text-white" />
+    <div className="flex flex-col h-screen bg-raven-dark text-white">
+      {/* Header */}
+      <div className="bg-black/20 p-4 flex items-center space-x-4">
+        <img
+          src="/lovable-uploads/bf5aa511-adfd-48e2-8692-950ee6d3b996.png"
+          alt="Raven"
+          className="w-12 h-12 rounded-full"
+        />
+        <div className="flex-1">
+          <h1 className="text-lg font-semibold">Raven</h1>
+          <p className="text-sm text-gray-400">Your AI Virtual Plug</p>
+        </div>
+        <div className="flex items-center space-x-2 text-sm">
+          <Signal className="w-4 h-4" />
+          <span>5G</span>
+          <Battery className="w-4 h-4" />
+          <span>{currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
         </div>
       </div>
 
-      {/* Chat Header */}
-      <div className="bg-black/90 px-4 py-3 border-b border-white/10">
-        <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 rounded-full bg-cover bg-center" 
-               style={{ backgroundImage: "url('/lovable-uploads/62fd8eb1-f0c1-4a66-a3b6-f9588687db41.png')" }}>
-          </div>
-          <div>
-            <h3 className="text-white font-medium">RAVEN</h3>
-            <p className="text-white/60 text-sm">Your AI Virtual Plug</p>
-          </div>
-        </div>
+      {/* Messages */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        {messages.map((message, index) => (
+          <MessageBubble key={index} content={message.content} isUser={message.isUser} />
+        ))}
+        {isTyping && <TypingIndicator />}
       </div>
 
-      {/* Messages Container */}
-      <div className="h-[calc(100%-8rem)] flex flex-col">
-        <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-black/95 scrollbar-none">
-          {messages.map((message, index) => (
-            <MessageBubble
-              key={index}
-              content={message.content}
-              isUser={message.isUser}
-            />
-          ))}
-          {isTyping && <TypingIndicator />}
+      {/* Input */}
+      <form onSubmit={handleSubmit} className="p-4 bg-black/20">
+        <div className="flex space-x-2">
+          <input
+            type="text"
+            value={inputMessage}
+            onChange={(e) => setInputMessage(e.target.value)}
+            placeholder="Type a message..."
+            className="flex-1 bg-white/10 rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-raven-light"
+          />
+          <button
+            type="submit"
+            className="bg-raven-light rounded-full px-6 py-2 font-semibold hover:bg-opacity-90 transition-colors"
+          >
+            Send
+          </button>
         </div>
-
-        {/* Input Area */}
-        <div className="p-4 bg-black/90 border-t border-white/10">
-          <div className="flex items-center space-x-2">
-            <input
-              type="text"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyPress={(e) => e.key === "Enter" && handleSend()}
-              placeholder="Message RAVEN..."
-              className="flex-1 bg-white/10 border border-white/20 rounded-full px-4 py-2 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-raven-accent"
-            />
-            <button
-              onClick={handleSend}
-              className="bg-raven-accent hover:bg-raven-accent/80 text-white rounded-full p-2 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-raven-accent"
-            >
-              <Send className="w-5 h-5" />
-            </button>
-          </div>
-        </div>
-      </div>
+      </form>
     </div>
   );
 };
