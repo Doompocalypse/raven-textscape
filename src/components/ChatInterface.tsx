@@ -86,7 +86,7 @@ export const ChatInterface = () => {
 
       {/* Messages Container */}
       <div className="h-[calc(100%-8rem)] flex flex-col">
-        <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-black/95">
+        <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-black/95 scrollbar-none">
           {messages.map((message, index) => (
             <MessageBubble
               key={index}
