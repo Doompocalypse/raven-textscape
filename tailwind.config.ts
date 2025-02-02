@@ -68,9 +68,6 @@ export default {
           "50%": { transform: "translateY(-10px)" },
         },
       },
-      backgroundImage: {
-        "apocalyptic": "url('https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05')",
-      },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
