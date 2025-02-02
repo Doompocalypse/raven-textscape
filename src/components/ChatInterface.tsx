@@ -42,9 +42,35 @@ export const ChatInterface = () => {
   };
 
   return (
-    <div className="w-full max-w-md mx-auto h-[600px] bg-white/10 backdrop-blur-lg rounded-3xl overflow-hidden border border-white/20 shadow-2xl animate-float">
-      <div className="h-full flex flex-col">
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+    <div className="relative w-[380px] h-[700px] mx-auto bg-black rounded-[3rem] border-4 border-white/10 shadow-2xl overflow-hidden">
+      {/* Phone Notch */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 h-6 w-40 bg-black rounded-b-2xl z-20"></div>
+      
+      {/* Status Bar */}
+      <div className="relative h-12 bg-black flex items-center justify-between px-6 border-b border-white/10">
+        <span className="text-white text-sm">9:41</span>
+        <div className="flex items-center space-x-2">
+          <span className="text-white text-sm">5G</span>
+          <span className="text-white text-sm">100%</span>
+        </div>
+      </div>
+
+      {/* Chat Header */}
+      <div className="bg-black/90 px-4 py-3 border-b border-white/10">
+        <div className="flex items-center space-x-3">
+          <div className="w-10 h-10 rounded-full bg-raven-light flex items-center justify-center">
+            <span className="text-white font-bold">R</span>
+          </div>
+          <div>
+            <h3 className="text-white font-medium">RAVEN</h3>
+            <p className="text-white/60 text-sm">Online in Wasteland</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Messages Container */}
+      <div className="h-[calc(100%-8rem)] flex flex-col">
+        <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-black/95">
           {messages.map((message, index) => (
             <MessageBubble
               key={index}
@@ -54,14 +80,16 @@ export const ChatInterface = () => {
           ))}
           {isTyping && <TypingIndicator />}
         </div>
-        <div className="p-4 bg-white/5 border-t border-white/10">
+
+        {/* Input Area */}
+        <div className="p-4 bg-black/90 border-t border-white/10">
           <div className="flex items-center space-x-2">
             <input
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyPress={(e) => e.key === "Enter" && handleSend()}
-              placeholder="How can I assist you today?"
+              placeholder="Message RAVEN..."
               className="flex-1 bg-white/10 border border-white/20 rounded-full px-4 py-2 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-raven-accent"
             />
             <button

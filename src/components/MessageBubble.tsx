@@ -10,13 +10,13 @@ export const MessageBubble = ({ content, isUser }: MessageBubbleProps) => {
   return (
     <div
       className={cn(
-        "max-w-[80%] p-4 rounded-2xl mb-4",
+        "max-w-[80%] p-3 rounded-2xl mb-2",
         isUser
-          ? "ml-auto bg-raven-accent text-white rounded-br-none"
-          : "bg-raven-light text-white rounded-bl-none"
+          ? "ml-auto bg-raven-accent text-white rounded-br-md"
+          : "bg-white/10 text-white rounded-bl-md"
       )}
     >
-      <p className="text-sm md:text-base">{content}</p>
+      <p className="text-sm">{content}</p>
     </div>
   );
 };
