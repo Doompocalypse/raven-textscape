@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { MessageBubble } from "./MessageBubble";
 import { TypingIndicator } from "./TypingIndicator";
-import { Send } from "lucide-react";
+import { Send, BatteryLow, SignalLow } from "lucide-react";
 
 export const ChatInterface = () => {
   const [messages, setMessages] = useState([
@@ -20,6 +20,22 @@ export const ChatInterface = () => {
   ]);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const [currentTime, setCurrentTime] = useState(new Date());
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const formatTime = (date: Date) => {
+    return date.toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true
+    });
+  };
 
   const handleSend = () => {
     if (!input.trim()) return;
@@ -28,7 +44,6 @@ export const ChatInterface = () => {
     setInput("");
     setIsTyping(true);
 
-    // Simulate RAVEN's response
     setTimeout(() => {
       setIsTyping(false);
       setMessages((prev) => [
@@ -48,22 +63,23 @@ export const ChatInterface = () => {
       
       {/* Status Bar */}
       <div className="relative h-12 bg-black flex items-center justify-between px-6 border-b border-white/10">
-        <span className="text-white text-sm">9:41</span>
+        <span className="text-white text-sm">{formatTime(currentTime)}</span>
         <div className="flex items-center space-x-2">
+          <SignalLow className="w-4 h-4 text-white" />
           <span className="text-white text-sm">5G</span>
-          <span className="text-white text-sm">100%</span>
+          <BatteryLow className="w-4 h-4 text-white" />
         </div>
       </div>
 
       {/* Chat Header */}
       <div className="bg-black/90 px-4 py-3 border-b border-white/10">
         <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 rounded-full bg-raven-light flex items-center justify-center">
-            <span className="text-white font-bold">R</span>
+          <div className="w-10 h-10 rounded-full bg-cover bg-center" 
+               style={{ backgroundImage: "url('/lovable-uploads/62fd8eb1-f0c1-4a66-a3b6-f9588687db41.png')" }}>
           </div>
           <div>
             <h3 className="text-white font-medium">RAVEN</h3>
-            <p className="text-white/60 text-sm">Online in Wasteland</p>
+            <p className="text-white/60 text-sm">Your AI Virtual Plug</p>
           </div>
         </div>
       </div>
