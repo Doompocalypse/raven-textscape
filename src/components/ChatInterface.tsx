@@ -1,23 +1,11 @@
+
 import React, { useState, useEffect } from "react";
 import { MessageBubble } from "./MessageBubble";
 import { TypingIndicator } from "./TypingIndicator";
 import { Send, BatteryLow, SignalLow } from "lucide-react";
 
 export const ChatInterface = () => {
-  const [messages, setMessages] = useState([
-    { content: "What is the contact address for $TEST token?", isUser: true },
-    {
-      content:
-        "The contract address for $TEST is 86EvFgXebSbpBHtaXboqie9RnopuoXVPkE4N5ncdpump.",
-      isUser: false,
-    },
-    { content: "What is your name?", isUser: true },
-    {
-      content:
-        "I'm Raven, your go-to gal for all things Doompocalypse. What can I hook you up with today?",
-      isUser: false,
-    },
-  ]);
+  const [messages, setMessages] = useState<Array<{ content: string; isUser: boolean }>>([]);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
