@@ -92,7 +92,7 @@ const Login = () => {
                style={{ backgroundImage: "url('/lovable-uploads/62fd8eb1-f0c1-4a66-a3b6-f9588687db41.png')" }}>
           </div>
           <h2 className="text-2xl font-bold text-center text-white mb-8">
-            {isSignUp ? "Create Account" : "Welcome Back"}
+            {isSignUp ? "Create Account" : "Sign In To RAVEN AI"}
           </h2>
           <form onSubmit={handleAuth} className="space-y-6">
             <div className="space-y-4">
