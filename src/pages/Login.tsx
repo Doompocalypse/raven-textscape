@@ -5,15 +5,14 @@ import {
   signInWithEmailAndPassword, 
   createUserWithEmailAndPassword,
   signInWithPopup,
-  GoogleAuthProvider,
-  GithubAuthProvider
+  GoogleAuthProvider
 } from "firebase/auth";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { Background } from "@/components/Background";
 import { Input } from "@/components/ui/input";
-import { Mail, Lock, SignalLow, BatteryLow, Github } from "lucide-react";
+import { Mail, Lock, SignalLow, BatteryLow } from "lucide-react";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -67,17 +66,6 @@ const Login = () => {
       navigate("/");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Google authentication failed");
-    }
-  };
-
-  const handleGithubSignIn = async () => {
-    try {
-      const provider = new GithubAuthProvider();
-      await signInWithPopup(auth, provider);
-      toast.success("Logged in with GitHub successfully!");
-      navigate("/");
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "GitHub authentication failed");
     }
   };
 
@@ -150,7 +138,7 @@ const Login = () => {
               </div>
             </div>
 
-            <div className="mt-6 space-y-3">
+            <div className="mt-6">
               <Button 
                 type="button" 
                 variant="outline" 
@@ -176,16 +164,6 @@ const Login = () => {
                   />
                 </svg>
                 Continue with Google
-              </Button>
-
-              <Button 
-                type="button" 
-                variant="outline" 
-                className="w-full bg-white/5 border-white/10 text-white hover:bg-white/10"
-                onClick={handleGithubSignIn}
-              >
-                <Github className="w-5 h-5 mr-2" />
-                Continue with GitHub
               </Button>
             </div>
           </div>
