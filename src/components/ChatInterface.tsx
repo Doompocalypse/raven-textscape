@@ -3,12 +3,16 @@ import React, { useState, useEffect } from "react";
 import { MessageBubble } from "./MessageBubble";
 import { TypingIndicator } from "./TypingIndicator";
 import { Send, BatteryLow, SignalLow } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/components/ui/use-toast";
 
 export const ChatInterface = () => {
   const [messages, setMessages] = useState<Array<{ content: string; isUser: boolean }>>([]);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [sessionId] = useState(() => crypto.randomUUID());
+  const { toast } = useToast();
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -17,31 +21,95 @@ export const ChatInterface = () => {
     return () => clearInterval(timer);
   }, []);
 
+  // Load existing messages for this session
+  useEffect(() => {
+    const loadMessages = async () => {
+      const { data, error } = await supabase
+        .from('messages')
+        .select('*')
+        .eq('session_id', sessionId)
+        .order('created_at', { ascending: true });
+
+      if (error) {
+        console.error('Error loading messages:', error);
+        toast({
+          title: "Error loading messages",
+          description: "There was a problem loading your chat history.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (data) {
+        setMessages(data.map(msg => ({
+          content: msg.content,
+          isUser: msg.is_user
+        })));
+      }
+    };
+
+    loadMessages();
+  }, [sessionId, toast]);
+
+  const handleSend = async () => {
+    if (!input.trim()) return;
+
+    const userMessage = { content: input, isUser: true };
+    setMessages(prev => [...prev, userMessage]);
+    setInput("");
+    setIsTyping(true);
+
+    // Store user message in Supabase
+    const { error: userMsgError } = await supabase
+      .from('messages')
+      .insert({
+        content: input,
+        is_user: true,
+        session_id: sessionId
+      });
+
+    if (userMsgError) {
+      console.error('Error saving user message:', userMsgError);
+      toast({
+        title: "Error saving message",
+        description: "Your message couldn't be saved.",
+        variant: "destructive",
+      });
+    }
+
+    // Simulate AI response
+    setTimeout(async () => {
+      setIsTyping(false);
+      const aiResponse = "I'm processing your request through the wasteland's network...";
+      
+      setMessages(prev => [...prev, { content: aiResponse, isUser: false }]);
+
+      // Store AI response in Supabase
+      const { error: aiMsgError } = await supabase
+        .from('messages')
+        .insert({
+          content: aiResponse,
+          is_user: false,
+          session_id: sessionId
+        });
+
+      if (aiMsgError) {
+        console.error('Error saving AI response:', aiMsgError);
+        toast({
+          title: "Error saving response",
+          description: "The AI response couldn't be saved.",
+          variant: "destructive",
+        });
+      }
+    }, 2000);
+  };
+
   const formatTime = (date: Date) => {
     return date.toLocaleTimeString('en-US', {
       hour: 'numeric',
       minute: '2-digit',
       hour12: true
     });
-  };
-
-  const handleSend = () => {
-    if (!input.trim()) return;
-
-    setMessages([...messages, { content: input, isUser: true }]);
-    setInput("");
-    setIsTyping(true);
-
-    setTimeout(() => {
-      setIsTyping(false);
-      setMessages((prev) => [
-        ...prev,
-        {
-          content: "I'm processing your request through the wasteland's network...",
-          isUser: false,
-        },
-      ]);
-    }, 2000);
   };
 
   return (
