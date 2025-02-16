@@ -9,262 +9,51 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      affiliates: {
+      history: {
         Row: {
-          created_at: string
-          id: string
-          referral_code: string
-          total_earnings: number
-          total_referrals: number
-          user_address: string
+          content: string
+          created_at: string | null
+          id: number
+          role: string
+          session_id: string
         }
         Insert: {
-          created_at?: string
-          id?: string
-          referral_code: string
-          total_earnings?: number
-          total_referrals?: number
-          user_address: string
+          content: string
+          created_at?: string | null
+          id?: number
+          role: string
+          session_id: string
         }
         Update: {
-          created_at?: string
-          id?: string
-          referral_code?: string
-          total_earnings?: number
-          total_referrals?: number
-          user_address?: string
+          content?: string
+          created_at?: string | null
+          id?: number
+          role?: string
+          session_id?: string
         }
         Relationships: []
       }
-      app_settings: {
+      test1: {
         Row: {
-          key: string
-          value: string
+          id: number
+          Name: string | null
         }
         Insert: {
-          key: string
-          value: string
+          id?: number
+          Name?: string | null
         }
         Update: {
-          key?: string
-          value?: string
+          id?: number
+          Name?: string | null
         }
         Relationships: []
-      }
-      nft_metadata: {
-        Row: {
-          attributes: Json | null
-          created_at: string
-          description: string | null
-          image_url: string
-          name: string
-          token_id: string
-        }
-        Insert: {
-          attributes?: Json | null
-          created_at?: string
-          description?: string | null
-          image_url: string
-          name: string
-          token_id: string
-        }
-        Update: {
-          attributes?: Json | null
-          created_at?: string
-          description?: string | null
-          image_url?: string
-          name?: string
-          token_id?: string
-        }
-        Relationships: []
-      }
-      nft_purchases: {
-        Row: {
-          buyer_address: string
-          id: string
-          price_paid: number
-          purchase_date: string
-          token_id: string
-          transaction_hash: string
-        }
-        Insert: {
-          buyer_address: string
-          id?: string
-          price_paid: number
-          purchase_date?: string
-          token_id: string
-          transaction_hash: string
-        }
-        Update: {
-          buyer_address?: string
-          id?: string
-          price_paid?: number
-          purchase_date?: string
-          token_id?: string
-          transaction_hash?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "nft_purchases_token_id_fkey"
-            columns: ["token_id"]
-            isOneToOne: false
-            referencedRelation: "nft_metadata"
-            referencedColumns: ["token_id"]
-          },
-        ]
-      }
-      real_nft_purchases: {
-        Row: {
-          buyer_address: string
-          id: string
-          purchase_date: string
-          token_id: string
-          transaction_hash: string | null
-        }
-        Insert: {
-          buyer_address: string
-          id?: string
-          purchase_date?: string
-          token_id: string
-          transaction_hash?: string | null
-        }
-        Update: {
-          buyer_address?: string
-          id?: string
-          purchase_date?: string
-          token_id?: string
-          transaction_hash?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "real_nft_purchases_token_id_fkey"
-            columns: ["token_id"]
-            isOneToOne: false
-            referencedRelation: "real_nfts"
-            referencedColumns: ["token_id"]
-          },
-        ]
-      }
-      real_nfts: {
-        Row: {
-          created_at: string
-          metadata: Json
-          token_id: string
-        }
-        Insert: {
-          created_at?: string
-          metadata: Json
-          token_id: string
-        }
-        Update: {
-          created_at?: string
-          metadata?: Json
-          token_id?: string
-        }
-        Relationships: []
-      }
-      referral_code_uses: {
-        Row: {
-          faithcoin_bonus_paid: boolean
-          id: string
-          referral_code_id: string
-          used_at: string
-          user_address: string
-        }
-        Insert: {
-          faithcoin_bonus_paid?: boolean
-          id?: string
-          referral_code_id: string
-          used_at?: string
-          user_address: string
-        }
-        Update: {
-          faithcoin_bonus_paid?: boolean
-          id?: string
-          referral_code_id?: string
-          used_at?: string
-          user_address?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "referral_code_uses_referral_code_id_fkey"
-            columns: ["referral_code_id"]
-            isOneToOne: false
-            referencedRelation: "referral_codes"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      referral_codes: {
-        Row: {
-          code: string
-          created_at: string
-          created_by: string
-          id: string
-          uses: number
-        }
-        Insert: {
-          code: string
-          created_at?: string
-          created_by: string
-          id?: string
-          uses?: number
-        }
-        Update: {
-          code?: string
-          created_at?: string
-          created_by?: string
-          id?: string
-          uses?: number
-        }
-        Relationships: []
-      }
-      referrals: {
-        Row: {
-          commission_paid: number
-          created_at: string
-          id: string
-          purchase_amount: number
-          referred_address: string
-          referrer_id: string
-        }
-        Insert: {
-          commission_paid?: number
-          created_at?: string
-          id?: string
-          purchase_amount?: number
-          referred_address: string
-          referrer_id: string
-        }
-        Update: {
-          commission_paid?: number
-          created_at?: string
-          id?: string
-          purchase_amount?: number
-          referred_address?: string
-          referrer_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "referrals_referrer_id_fkey"
-            columns: ["referrer_id"]
-            isOneToOne: false
-            referencedRelation: "affiliates"
-            referencedColumns: ["id"]
-          },
-        ]
       }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      get_secret: {
-        Args: {
-          secret_name: string
-        }
-        Returns: string
-      }
+      [_ in never]: never
     }
     Enums: {
       [_ in never]: never
