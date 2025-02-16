@@ -21,6 +21,37 @@ export const ChatInterface = () => {
     return () => clearInterval(timer);
   }, []);
 
+  // Subscribe to message updates
+  useEffect(() => {
+    const channel = supabase
+      .channel('message_updates')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'messages',
+          filter: `session_id=eq.${sessionId}`,
+        },
+        (payload) => {
+          const { new: updatedMessage } = payload;
+          if (updatedMessage.bot_response) {
+            setIsTyping(false);
+            setMessages(prev => {
+              // Remove the last message if it was a loading message
+              const filtered = prev.filter(msg => msg.content !== "I'm processing your request through the wasteland's network...");
+              return [...filtered, { content: updatedMessage.bot_response, isUser: false }];
+            });
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [sessionId]);
+
   // Load existing messages for this session
   useEffect(() => {
     const loadMessages = async () => {
@@ -42,7 +73,7 @@ export const ChatInterface = () => {
 
       if (data) {
         setMessages(data.map(msg => ({
-          content: msg.content,
+          content: msg.is_user ? msg.content : (msg.bot_response || msg.content),
           isUser: msg.is_user
         })));
       }
@@ -65,7 +96,8 @@ export const ChatInterface = () => {
       .insert({
         content: input,
         is_user: true,
-        session_id: sessionId
+        session_id: sessionId,
+        status: 'pending'
       });
 
     if (userMsgError) {
@@ -76,32 +108,6 @@ export const ChatInterface = () => {
         variant: "destructive",
       });
     }
-
-    // Simulate AI response
-    setTimeout(async () => {
-      setIsTyping(false);
-      const aiResponse = "I'm processing your request through the wasteland's network...";
-      
-      setMessages(prev => [...prev, { content: aiResponse, isUser: false }]);
-
-      // Store AI response in Supabase
-      const { error: aiMsgError } = await supabase
-        .from('messages')
-        .insert({
-          content: aiResponse,
-          is_user: false,
-          session_id: sessionId
-        });
-
-      if (aiMsgError) {
-        console.error('Error saving AI response:', aiMsgError);
-        toast({
-          title: "Error saving response",
-          description: "The AI response couldn't be saved.",
-          variant: "destructive",
-        });
-      }
-    }, 2000);
   };
 
   const formatTime = (date: Date) => {

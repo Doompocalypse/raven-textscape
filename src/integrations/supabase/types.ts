@@ -35,25 +35,34 @@ export type Database = {
       }
       messages: {
         Row: {
+          bot_response: string | null
           content: string
           created_at: string
           id: number
           is_user: boolean
           session_id: string
+          status: string | null
+          webhook_processed: boolean | null
         }
         Insert: {
+          bot_response?: string | null
           content: string
           created_at?: string
           id?: number
           is_user?: boolean
           session_id?: string
+          status?: string | null
+          webhook_processed?: boolean | null
         }
         Update: {
+          bot_response?: string | null
           content?: string
           created_at?: string
           id?: number
           is_user?: boolean
           session_id?: string
+          status?: string | null
+          webhook_processed?: boolean | null
         }
         Relationships: []
       }
