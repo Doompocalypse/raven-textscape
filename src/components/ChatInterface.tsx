@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { MessageBubble } from "./MessageBubble";
 import { TypingIndicator } from "./TypingIndicator";
@@ -6,7 +5,7 @@ import { Send, BatteryLow, SignalLow } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 
-export const ChatInterface = () => {
+export const ChatInterface = ({ selectedModel }) => {
   const [messages, setMessages] = useState<Array<{ content: string; isUser: boolean }>>([]);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
@@ -24,22 +23,24 @@ export const ChatInterface = () => {
   // Subscribe to message updates
   useEffect(() => {
     const channel = supabase
-      .channel('message_updates')
+      .channel("message_updates")
       .on(
-        'postgres_changes',
+        "postgres_changes",
         {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'messages',
+          event: "UPDATE",
+          schema: "public",
+          table: "messages",
           filter: `session_id=eq.${sessionId}`,
         },
         (payload) => {
           const { new: updatedMessage } = payload;
           if (updatedMessage.bot_response) {
             setIsTyping(false);
-            setMessages(prev => {
+            setMessages((prev) => {
               // Remove the last message if it was a loading message
-              const filtered = prev.filter(msg => msg.content !== "I'm processing your request through the wasteland's network...");
+              const filtered = prev.filter(
+                (msg) => msg.content !== "I'm processing your request through the wasteland's network..."
+              );
               return [...filtered, { content: updatedMessage.bot_response, isUser: false }];
             });
           }
@@ -56,13 +57,13 @@ export const ChatInterface = () => {
   useEffect(() => {
     const loadMessages = async () => {
       const { data, error } = await supabase
-        .from('messages')
-        .select('*')
-        .eq('session_id', sessionId)
-        .order('created_at', { ascending: true });
+        .from("messages")
+        .select("*")
+        .eq("session_id", sessionId)
+        .order("created_at", { ascending: true });
 
       if (error) {
-        console.error('Error loading messages:', error);
+        console.error("Error loading messages:", error);
         toast({
           title: "Error loading messages",
           description: "There was a problem loading your chat history.",
@@ -72,10 +73,12 @@ export const ChatInterface = () => {
       }
 
       if (data) {
-        setMessages(data.map(msg => ({
-          content: msg.is_user ? msg.content : (msg.bot_response || msg.content),
-          isUser: msg.is_user
-        })));
+        setMessages(
+          data.map((msg) => ({
+            content: msg.is_user ? msg.content : msg.bot_response || msg.content,
+            isUser: msg.is_user,
+          }))
+        );
       }
     };
 
@@ -86,35 +89,56 @@ export const ChatInterface = () => {
     if (!input.trim()) return;
 
     const userMessage = { content: input, isUser: true };
-    setMessages(prev => [...prev, userMessage]);
+    setMessages((prev) => [...prev, userMessage]);
     setInput("");
     setIsTyping(true);
 
-    // Store user message in Supabase
-    const { error: userMsgError } = await supabase
-      .from('messages')
-      .insert({
-        content: input,
-        is_user: true,
-        session_id: sessionId,
-        status: 'pending'
+    try {
+      const { data: functionData, error: functionError } = await supabase.functions.invoke("chat", {
+        body: { message: input, model: selectedModel },
       });
 
-    if (userMsgError) {
-      console.error('Error saving user message:', userMsgError);
+      if (functionError) throw functionError;
+
+      const assistantMessage = {
+        role: "assistant" as const,
+        content: functionData.choices[0].message.content,
+      };
+      setMessages((prev) => [...prev, assistantMessage]);
+    } catch (error) {
+      console.error("Error:", error);
       toast({
-        title: "Error saving message",
-        description: "Your message couldn't be saved.",
+        title: "Error",
+        description: "Failed to get response from AI",
         variant: "destructive",
       });
     }
+
+    // Store user message in Supabase
+    // const { error: userMsgError } = await supabase
+    //   .from('messages')
+    //   .insert({
+    //     content: input,
+    //     is_user: true,
+    //     session_id: sessionId,
+    //     status: 'pending'
+    //   });
+
+    // if (userMsgError) {
+    //   console.error('Error saving user message:', userMsgError);
+    //   toast({
+    //     title: "Error saving message",
+    //     description: "Your message couldn't be saved.",
+    //     variant: "destructive",
+    //   });
+    // }
   };
 
   const formatTime = (date: Date) => {
-    return date.toLocaleTimeString('en-US', {
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true
+    return date.toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
     });
   };
 
@@ -122,7 +146,7 @@ export const ChatInterface = () => {
     <div className="relative w-[380px] h-[700px] mx-auto bg-black rounded-[3rem] border-4 border-white/10 shadow-2xl overflow-hidden">
       {/* Phone Notch */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 h-6 w-40 bg-black rounded-b-2xl z-20"></div>
-      
+
       {/* Status Bar */}
       <div className="relative h-12 bg-black flex items-center justify-between px-6 border-b border-white/10">
         <span className="text-white text-sm">{formatTime(currentTime)}</span>
@@ -136,9 +160,9 @@ export const ChatInterface = () => {
       {/* Chat Header */}
       <div className="bg-black/90 px-4 py-3 border-b border-white/10">
         <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 rounded-full bg-cover bg-center" 
-               style={{ backgroundImage: "url('/lovable-uploads/62fd8eb1-f0c1-4a66-a3b6-f9588687db41.png')" }}>
-          </div>
+          <div
+            className="w-10 h-10 rounded-full bg-cover bg-center"
+            style={{ backgroundImage: "url('/lovable-uploads/62fd8eb1-f0c1-4a66-a3b6-f9588687db41.png')" }}></div>
           <div>
             <h3 className="text-white font-medium">RAVEN</h3>
             <p className="text-white/60 text-sm">Your AI Virtual Plug</p>
@@ -150,11 +174,7 @@ export const ChatInterface = () => {
       <div className="h-[calc(100%-8rem)] flex flex-col">
         <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-black/95 scrollbar-none">
           {messages.map((message, index) => (
-            <MessageBubble
-              key={index}
-              content={message.content}
-              isUser={message.isUser}
-            />
+            <MessageBubble key={index} content={message.content} isUser={message.isUser} />
           ))}
           {isTyping && <TypingIndicator />}
         </div>
@@ -172,8 +192,7 @@ export const ChatInterface = () => {
             />
             <button
               onClick={handleSend}
-              className="bg-raven-accent hover:bg-raven-accent/80 text-white rounded-full p-2 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-raven-accent"
-            >
+              className="bg-raven-accent hover:bg-raven-accent/80 text-white rounded-full p-2 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-raven-accent">
               <Send className="w-5 h-5" />
             </button>
           </div>
