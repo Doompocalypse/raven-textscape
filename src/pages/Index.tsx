@@ -1,6 +1,5 @@
 import { Background } from "@/components/Background";
 import { ChatInterface } from "@/components/ChatInterface";
-import { useState } from "react";
 
 const Index = () => {
   return (
