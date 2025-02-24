@@ -125,7 +125,7 @@ export const ChatInterface = () => {
   const avatarUrl = useMemo(() => "/lovable-uploads/62fd8eb1-f0c1-4a66-a3b6-f9588687db41.png", []);
 
   return (
-    <div className="relative w-[380px] h-[700px] mx-auto bg-black rounded-[3rem] border-4 border-white/10 shadow-2xl overflow-hidden">
+    <div className="relative w-[380px] h-[600px] sm:h-[650px] md:h-[700px] mx-auto bg-black rounded-[3rem] border-4 border-white/10 shadow-2xl overflow-hidden">
       <div className="absolute top-0 left-1/2 -translate-x-1/2 h-6 w-40 bg-black rounded-b-2xl z-20"></div>
       
       <div className="relative h-12 bg-black flex items-center justify-between px-6 border-b border-white/10">
