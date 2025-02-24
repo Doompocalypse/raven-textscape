@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { MessageBubble } from "./MessageBubble";
 import { TypingIndicator } from "./TypingIndicator";
 import { Send, BatteryLow, SignalLow } from "lucide-react";
@@ -11,17 +11,27 @@ export const ChatInterface = () => {
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
-  const [sessionId] = useState(() => crypto.randomUUID());
+  const sessionId = useMemo(() => crypto.randomUUID(), []);
   const { toast } = useToast();
 
+  // Memoize formatTime function
+  const formatTime = useCallback((date: Date) => {
+    return date.toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true
+    });
+  }, []);
+
+  // Update time less frequently
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentTime(new Date());
-    }, 1000);
+    }, 10000); // Update every 10 seconds instead of every second
     return () => clearInterval(timer);
   }, []);
 
-  // Subscribe to message updates
+  // Memoize the subscription setup
   useEffect(() => {
     const channel = supabase
       .channel('message_updates')
@@ -38,8 +48,9 @@ export const ChatInterface = () => {
           if (updatedMessage.bot_response) {
             setIsTyping(false);
             setMessages(prev => {
-              // Remove the last message if it was a loading message
-              const filtered = prev.filter(msg => msg.content !== "I'm processing your request through the wasteland's network...");
+              const filtered = prev.filter(msg => 
+                msg.content !== "I'm processing your request through the wasteland's network..."
+              );
               return [...filtered, { content: updatedMessage.bot_response, isUser: false }];
             });
           }
@@ -52,7 +63,7 @@ export const ChatInterface = () => {
     };
   }, [sessionId]);
 
-  // Load existing messages for this session
+  // Load messages only once on mount
   useEffect(() => {
     const loadMessages = async () => {
       const { data, error } = await supabase
@@ -82,7 +93,8 @@ export const ChatInterface = () => {
     loadMessages();
   }, [sessionId, toast]);
 
-  const handleSend = async () => {
+  // Memoize handleSend function
+  const handleSend = useCallback(async () => {
     if (!input.trim()) return;
 
     const userMessage = { content: input, isUser: true };
@@ -90,40 +102,32 @@ export const ChatInterface = () => {
     setInput("");
     setIsTyping(true);
 
-    // Store user message in Supabase
-    const { error: userMsgError } = await supabase
-      .from('messages')
-      .insert({
-        content: input,
-        is_user: true,
-        session_id: sessionId,
-        status: 'pending'
-      });
-
-    if (userMsgError) {
-      console.error('Error saving user message:', userMsgError);
+    try {
+      await supabase
+        .from('messages')
+        .insert({
+          content: input,
+          is_user: true,
+          session_id: sessionId,
+          status: 'pending'
+        });
+    } catch (error) {
+      console.error('Error saving user message:', error);
       toast({
         title: "Error saving message",
         description: "Your message couldn't be saved.",
         variant: "destructive",
       });
     }
-  };
+  }, [input, sessionId, toast]);
 
-  const formatTime = (date: Date) => {
-    return date.toLocaleTimeString('en-US', {
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true
-    });
-  };
+  // Memoize the avatar image URL
+  const avatarUrl = useMemo(() => "/lovable-uploads/62fd8eb1-f0c1-4a66-a3b6-f9588687db41.png", []);
 
   return (
-    <div className="relative w-[380px] h-[700px] mx-auto bg-black rounded-[3rem] border-4 border-white/10 shadow-2xl overflow-hidden">
-      {/* Phone Notch */}
+    <div className="relative w-[380px] h-[600px] sm:h-[650px] md:h-[700px] mx-auto bg-black rounded-[3rem] border-4 border-white/10 shadow-2xl overflow-hidden">
       <div className="absolute top-0 left-1/2 -translate-x-1/2 h-6 w-40 bg-black rounded-b-2xl z-20"></div>
       
-      {/* Status Bar */}
       <div className="relative h-12 bg-black flex items-center justify-between px-6 border-b border-white/10">
         <span className="text-white text-sm">{formatTime(currentTime)}</span>
         <div className="flex items-center space-x-2">
@@ -133,12 +137,12 @@ export const ChatInterface = () => {
         </div>
       </div>
 
-      {/* Chat Header */}
       <div className="bg-black/90 px-4 py-3 border-b border-white/10">
         <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 rounded-full bg-cover bg-center" 
-               style={{ backgroundImage: "url('/lovable-uploads/62fd8eb1-f0c1-4a66-a3b6-f9588687db41.png')" }}>
-          </div>
+          <div 
+            className="w-10 h-10 rounded-full bg-cover bg-center" 
+            style={{ backgroundImage: `url('${avatarUrl}')` }}
+          />
           <div>
             <h3 className="text-white font-medium">RAVEN</h3>
             <p className="text-white/60 text-sm">Your AI Virtual Plug</p>
@@ -146,12 +150,11 @@ export const ChatInterface = () => {
         </div>
       </div>
 
-      {/* Messages Container */}
       <div className="h-[calc(100%-8rem)] flex flex-col">
         <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-black/95 scrollbar-none">
           {messages.map((message, index) => (
             <MessageBubble
-              key={index}
+              key={`${index}-${message.content.substring(0, 10)}`}
               content={message.content}
               isUser={message.isUser}
             />
@@ -159,7 +162,6 @@ export const ChatInterface = () => {
           {isTyping && <TypingIndicator />}
         </div>
 
-        {/* Input Area */}
         <div className="p-4 bg-black/90 border-t border-white/10">
           <div className="flex items-center space-x-2">
             <input
