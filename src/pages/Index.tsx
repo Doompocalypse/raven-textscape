@@ -1,10 +1,10 @@
-
 import { Background } from "@/components/Background";
 import { ChatInterface } from "@/components/ChatInterface";
+import { useState } from "react";
 
 const Index = () => {
   return (
-    <div className="min-h-screen flex items-center justify-center overflow-auto py-8">
+    <div className="h-screen flex items-center justify-center overflow-hidden">
       <Background />
       <ChatInterface />
     </div>

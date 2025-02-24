@@ -125,11 +125,9 @@ export const ChatInterface = () => {
   const avatarUrl = useMemo(() => "/lovable-uploads/62fd8eb1-f0c1-4a66-a3b6-f9588687db41.png", []);
 
   return (
-    <div className="w-[380px] h-[700px] mx-auto my-4 bg-black rounded-[3rem] border-4 border-white/10 shadow-2xl overflow-hidden relative flex flex-col">
-      {/* Phone Notch */}
+    <div className="relative w-[380px] h-[700px] mx-auto bg-black rounded-[3rem] border-4 border-white/10 shadow-2xl overflow-hidden">
       <div className="absolute top-0 left-1/2 -translate-x-1/2 h-6 w-40 bg-black rounded-b-2xl z-20"></div>
       
-      {/* Status Bar */}
       <div className="relative h-12 bg-black flex items-center justify-between px-6 border-b border-white/10">
         <span className="text-white text-sm">{formatTime(currentTime)}</span>
         <div className="flex items-center space-x-2">
@@ -139,7 +137,6 @@ export const ChatInterface = () => {
         </div>
       </div>
 
-      {/* Chat Header */}
       <div className="bg-black/90 px-4 py-3 border-b border-white/10">
         <div className="flex items-center space-x-3">
           <div 
@@ -153,8 +150,7 @@ export const ChatInterface = () => {
         </div>
       </div>
 
-      {/* Messages Container */}
-      <div className="flex-1 flex flex-col min-h-0">
+      <div className="h-[calc(100%-8rem)] flex flex-col">
         <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-black/95 scrollbar-none">
           {messages.map((message, index) => (
             <MessageBubble
@@ -166,7 +162,6 @@ export const ChatInterface = () => {
           {isTyping && <TypingIndicator />}
         </div>
 
-        {/* Input Area */}
         <div className="p-4 bg-black/90 border-t border-white/10">
           <div className="flex items-center space-x-2">
             <input
