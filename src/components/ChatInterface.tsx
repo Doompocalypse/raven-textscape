@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { MessageBubble } from "./MessageBubble";
 import { TypingIndicator } from "./TypingIndicator";
@@ -16,10 +15,10 @@ export const ChatInterface = () => {
 
   // Memoize formatTime function
   const formatTime = useCallback((date: Date) => {
-    return date.toLocaleTimeString('en-US', {
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true
+    return date.toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
     });
   }, []);
 
@@ -34,22 +33,22 @@ export const ChatInterface = () => {
   // Memoize the subscription setup
   useEffect(() => {
     const channel = supabase
-      .channel('message_updates')
+      .channel("message_updates")
       .on(
-        'postgres_changes',
+        "postgres_changes",
         {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'messages',
+          event: "UPDATE",
+          schema: "public",
+          table: "messages",
           filter: `session_id=eq.${sessionId}`,
         },
         (payload) => {
           const { new: updatedMessage } = payload;
           if (updatedMessage.bot_response) {
             setIsTyping(false);
-            setMessages(prev => {
-              const filtered = prev.filter(msg => 
-                msg.content !== "I'm processing your request through the wasteland's network..."
+            setMessages((prev) => {
+              const filtered = prev.filter(
+                (msg) => msg.content !== "I'm processing your request through the wasteland's network..."
               );
               return [...filtered, { content: updatedMessage.bot_response, isUser: false }];
             });
@@ -67,13 +66,13 @@ export const ChatInterface = () => {
   useEffect(() => {
     const loadMessages = async () => {
       const { data, error } = await supabase
-        .from('messages')
-        .select('*')
-        .eq('session_id', sessionId)
-        .order('created_at', { ascending: true });
+        .from("messages")
+        .select("*")
+        .eq("session_id", sessionId)
+        .order("created_at", { ascending: true });
 
       if (error) {
-        console.error('Error loading messages:', error);
+        console.error("Error loading messages:", error);
         toast({
           title: "Error loading messages",
           description: "There was a problem loading your chat history.",
@@ -83,10 +82,12 @@ export const ChatInterface = () => {
       }
 
       if (data) {
-        setMessages(data.map(msg => ({
-          content: msg.is_user ? msg.content : (msg.bot_response || msg.content),
-          isUser: msg.is_user
-        })));
+        setMessages(
+          data.map((msg) => ({
+            content: msg.is_user ? msg.content : msg.bot_response || msg.content,
+            isUser: msg.is_user,
+          }))
+        );
       }
     };
 
@@ -98,21 +99,25 @@ export const ChatInterface = () => {
     if (!input.trim()) return;
 
     const userMessage = { content: input, isUser: true };
-    setMessages(prev => [...prev, userMessage]);
+    setMessages((prev) => [...prev, userMessage]);
     setInput("");
     setIsTyping(true);
 
     try {
-      await supabase
-        .from('messages')
-        .insert({
-          content: input,
-          is_user: true,
-          session_id: sessionId,
-          status: 'pending'
-        });
+      const { data: functionData, error: functionError } = await supabase.functions.invoke("chat", {
+        body: { message: input },
+      });
+      console.log(functionData);
+
+      if (functionError) throw functionError;
+      const assistantMessage = {
+        role: "assistant" as const,
+        content: functionData.results.text_chunk,
+      };
+
+      setMessages((prev) => [...prev, assistantMessage]);
     } catch (error) {
-      console.error('Error saving user message:', error);
+      console.error("Error saving user message:", error);
       toast({
         title: "Error saving message",
         description: "Your message couldn't be saved.",
@@ -127,7 +132,7 @@ export const ChatInterface = () => {
   return (
     <div className="relative w-[380px] h-[600px] sm:h-[650px] md:h-[700px] mx-auto bg-black rounded-[3rem] border-4 border-white/10 shadow-2xl overflow-hidden">
       <div className="absolute top-0 left-1/2 -translate-x-1/2 h-6 w-40 bg-black rounded-b-2xl z-20"></div>
-      
+
       <div className="relative h-12 bg-black flex items-center justify-between px-6 border-b border-white/10">
         <span className="text-white text-sm">{formatTime(currentTime)}</span>
         <div className="flex items-center space-x-2">
@@ -139,8 +144,8 @@ export const ChatInterface = () => {
 
       <div className="bg-black/90 px-4 py-3 border-b border-white/10">
         <div className="flex items-center space-x-3">
-          <div 
-            className="w-10 h-10 rounded-full bg-cover bg-center" 
+          <div
+            className="w-10 h-10 rounded-full bg-cover bg-center"
             style={{ backgroundImage: `url('${avatarUrl}')` }}
           />
           <div>
@@ -174,8 +179,7 @@ export const ChatInterface = () => {
             />
             <button
               onClick={handleSend}
-              className="bg-raven-accent hover:bg-raven-accent/80 text-white rounded-full p-2 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-raven-accent"
-            >
+              className="bg-raven-accent hover:bg-raven-accent/80 text-white rounded-full p-2 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-raven-accent">
               <Send className="w-5 h-5" />
             </button>
           </div>
