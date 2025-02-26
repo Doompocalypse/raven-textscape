@@ -74,26 +74,6 @@ async function getQueryEmbedding(query) {
   return data[0].embedding;
 }
 
-// async function searchSimilarDocuments(queryEmbedding) {
-//   try {
-//     const { data, error } = await supabaseAdmin
-//       .from("documents")
-//       .select("document_name, embedding")
-//       .order("embedding <->", { ascending: true, foreignTable: queryEmbedding }) // Sort by distance to query embedding
-//       .limit(5); // Get the top 5 most similar results
-
-//     if (error) {
-//       console.error("Supabase Error:", error);
-//       throw new Error("Error fetching documents from Supabase");
-//     }
-
-//     return data;
-//   } catch (error) {
-//     console.error("Error in searchSimilarDocuments:", error);
-//     throw error; // Rethrow the error for further handling
-//   }
-// }
-
 async function searchSimilarDocuments(queryEmbedding) {
   try {
     const { data, error } = await supabaseAdmin.rpc("search_similar_documents", {
