@@ -104,7 +104,7 @@ export const ChatInterface = () => {
     setIsTyping(true);
 
     try {
-      const { data: functionData, error: functionError } = await supabase.functions.invoke("chat", {
+      const { data: functionData, error: functionError } = await supabase.functions.invoke("chat-test", {
         body: { message: input },
       });
       console.log(functionData);
@@ -112,7 +112,8 @@ export const ChatInterface = () => {
       if (functionError) throw functionError;
       const assistantMessage = {
         role: "assistant" as const,
-        content: functionData.results.text_chunk,
+        // content: functionData.results.text_chunk,
+        content: functionData.results,
       };
 
       setMessages((prev) => [...prev, assistantMessage]);
