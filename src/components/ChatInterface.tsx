@@ -104,7 +104,7 @@ export const ChatInterface = () => {
     setIsTyping(true);
 
     try {
-      const { data: functionData, error: functionError } = await supabase.functions.invoke("chat-test", {
+      const { data: functionData, error: functionError } = await supabase.functions.invoke("chat", {
         body: { message: input },
       });
       console.log(functionData);

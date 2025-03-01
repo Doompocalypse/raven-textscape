@@ -158,7 +158,7 @@ async function searchSimilarDocuments(queryEmbedding) {
     });
 
     // Define similarity threshold
-    const SIMILARITY_THRESHOLD = 0.15;
+    const SIMILARITY_THRESHOLD = 0.5;
 
     console.log("bestScore ", bestScore);
     console.log("bestMatch ", bestMatch.text_chunk);
